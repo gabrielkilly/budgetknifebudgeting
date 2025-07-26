@@ -1,43 +1,34 @@
 package com.butterknifebudgeting.app
 
+import java.math.BigDecimal
+
 class DatabaseManager {
-    lateinit var boxStore: BoxStore
-        private set
-
-    fun initDatabase(): BoxStore {
-        val dbDir = File(System.getProperty("user.home"), ".yourapp-server/objectbox")
-        dbDir.mkdirs()
-
-        boxStore = MyObjectBox.builder()
-            .directory(dbDir)
-            .build()
-
-        return boxStore
-    }
-
-    fun closeDatabase() {
-        if (::boxStore.isInitialized) {
-            boxStore.close()
-        }
+    fun getIncomeListForBudget(id: String): List<IIncome> {
+       return MockDb.budgets.first { it.id == id }.incomes
     }
 }
 
-class UserRepository(private val databaseManager: DatabaseManager) {
-    private val userBox = databaseManager.boxStore.boxFor<User>()
+object MockDb {
+    private val usaaIncome = Income(
+        grossAmount = Salary(
+            hourlyWage = BigDecimal("32.45"),
+            hoursPerPaycheck = 80
+        ).getGrossAmount(),
+        frequency = Frequency.BiWeekly,
+        preTaxWithHoldings = listOf(
+            SavingsWithHolding(
+                name = "401k",
+                unitsWithHeld = BigDecimal("0.06"),
+                unitType = WithHoldingType.PERCENTAGE
+            )
+        ),
+        taxPercentage = BigDecimal("20.15"),
+        postTaxWithHoldings = listOf()
+    )
+    private val myBudget = Budget(
+        id = "1",
+        incomes = listOf(usaaIncome)
+    )
 
-    fun getAllUsers(): List<User> = userBox.all
-
-    fun createUser(user: User): User {
-        val id = userBox.put(user)
-        return userBox.get(id)
-    }
-
-    fun getUserById(id: Long): User? = userBox.get(id)
-
-    fun updateUser(user: User): User {
-        userBox.put(user)
-        return user
-    }
-
-    fun deleteUser(id: Long): Boolean = userBox.remove(id)
+    val budgets: List<IBudget> = listOf(myBudget)
 }

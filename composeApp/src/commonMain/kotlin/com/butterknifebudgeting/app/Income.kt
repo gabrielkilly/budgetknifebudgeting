@@ -57,5 +57,5 @@ class Salary(
     override val hoursPerPaycheck: Int
 ): ISalary {
     fun getGrossAmount(): BigDecimal =
-        hourlyWage * BigDecimal(hoursPerPaycheck)
+        hourlyWage.multiply(BigDecimal(hoursPerPaycheck))
 }
